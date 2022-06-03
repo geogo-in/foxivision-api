@@ -1,0 +1,372 @@
+swagger: "2.0"
+
+#Meta info
+info:
+  version: "1.0"
+  title: "FieldTrack"
+  description: |
+    FieldTrack is a solution to manage on-field service operations effectively. Our APIs will let you build services and solutions for both "End cosumers" and "Managing background operations".
+    
+    Primary use case:
+    
+    i) Companies, who are providing in-premise services for maintenance of home or industrial appliances can use FieldTrack. Once they receives a service request from a client, based on the location and type of case, they allocate a service engineer. Then the service engineer visits client's location to perform that maintenance job.
+      That complete flow, from managing client's cases, to tracking service engineers, can be easily managed using this all-in-one Fieldtrack platform.
+      
+host: "fieldtrack.xyz"
+basePath: "/v1.0"
+schemes:
+  - "http"
+  - "https"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"  
+tags:
+  - name: "Users"
+    description:  |
+      In FieldTrack, users can be agents, service engineers or technicians. The users endpoints can be used to login to the system, to check status of assigned cases and to update details on work performed at client location etc.
+  - name: "Cases"
+    description: |
+      Cases are nothing but service requests coming from clients or customers.
+      Cases endpoints can be used to raise new service request or case, get list of open cases for an user and to update a case.
+  - name: "Clients"
+    description:  "Clients are end-users or customers who are raising all these cases or service requsts. Use clients endpoints "
+  - name: "Locations"
+    description:  "Locations are actual cities, districts where agents are prividing serivces."
+
+    
+# Paths
+paths:
+  /users/sign_in:
+    post:
+      summary:  "User Signin"
+      description:  |
+        The Signin endpoint allows you to authorize your application and get an access_token using the email and password.
+      tags:
+        - "Users"
+      parameters:      
+        - in: "body"
+          name: "user"
+          description:  "Sample payload for user signin"
+          required: true
+          schema:
+            $ref: "#/definitions/SigninRequestPayload"
+      responses:
+        "200":
+          description:  "Status-Code: 200 OK"
+          schema:
+            $ref: "#/definitions/SigninResponsePayload"
+        "401":
+          description:  "Status-Code: 401 unauthorized"
+          schema:
+            type: string
+            example: "Invalid email or password"         
+  /users/{id}:
+    get:
+      summary:  "Get user details"
+      description:  |
+        This endpoint returns the details of an authenticated user. Response includes information such as name, email, rating, and account status.
+      tags:
+        - "Users"
+      parameters:
+        - name: "id"
+          in: "path"
+          type: "string"
+          required: true   
+      responses:
+        "200":
+          description:  "Status-Code: 200 OK"
+          schema:
+            $ref: "#/definitions/UserDetailsResponse"
+  /cases:
+    get:
+      summary: "View list of all cases"
+      description:  "View list of all cases"
+      tags:
+        - "Cases"
+      responses:
+        "200":
+          description:  "Successfully fetched all cases"
+          schema:
+            $ref: "#/definitions/Case"
+    post:
+      summary:  "Create a new Case"
+      description:  "Create a new case"
+      tags:
+        - "Cases"
+      parameters:
+        - name: "case"
+          in: "body"
+          description:  "New case payload"
+          required: true
+          schema:
+            $ref: "#/definitions/Case"
+      responses:
+        "200":
+          description:  "Successfully created a new case"
+          schema:
+            $ref: "#/definitions/Case"
+  /cases/{id}:
+    get:
+      summary:  "View a case"
+      description:  "View a case details"
+      tags:
+        - "Cases" 
+      parameters:
+        - name: "id"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        "200":
+          description:  "Details of a case whenever a success reponse received"
+          schema:
+            $ref: "#/definitions/Case"    
+        "404":
+          description:  "Case with supplied ID not found"  
+    put:
+      summary:  "Update a Case"
+      description:  "Update an existing Case"
+      tags:
+        - "Cases" 
+      parameters:
+        - name: "id"
+          in: "path"
+          type: "string"
+          required: true
+        - name: "case"
+          in: "body"
+          description:  "Application update payload"
+          required: true
+          schema:
+            $ref: "#/definitions/Case"
+      responses:
+        "200":
+          description: "Successfully updted case"
+          schema:
+            $ref: "#/definitions/Case"  
+        "422":
+          description: "Invalid data"
+
+  /clients:
+    get:
+      summary: "View list of all clients"
+      description:  "View list of all clients"
+      tags:
+        - "Clients"
+      responses:
+        "200":
+          description:  "Successfully fetched all clients"
+          schema:
+            $ref: "#/definitions/Client"
+  /clients/{id}:
+    get:
+      summary:  "View a client"
+      description:  "View a client details"
+      tags:
+        - "Clients" 
+      parameters:
+        - name: "id"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        "200":
+          description:  "Details of a client whenever a success reponse received"
+          schema:
+            $ref: "#/definitions/Client"    
+        "404":
+          description:  "Client with supplied ID not found" 
+
+  /locations:
+    get:
+      summary: "View list of all locations"
+      description:  "View list of all locations"
+      tags:
+        - "Locations"
+      responses:
+        "200":
+          description:  "Successfully fetched all locations"
+          schema:
+            $ref: "#/definitions/Location"
+    
+# Definitions
+definitions:
+  Case:
+    type: "object"
+    required:
+      - "id"
+      - "case_number"
+      - "client_id"
+      - "location_id"
+      - "due_date"
+      - "appointment_datetime"
+    properties:
+      id:
+        type: "integer"
+      case_number:
+        type: "string"
+      client_id:
+        type: "integer"        
+      location_id:
+        type: "integer"
+      appointment_datetime:
+        type: "string"
+      state:
+        type: "string"
+        enum:
+          - "open"
+          - "allocated"        
+          - "in_progress"
+          - "completed"
+          - "closed"
+          - "cancelled"
+      due_date:
+        type: "string"
+      estimated_date:
+        type: "string"
+      agent_id:
+        type: "integer"
+      started_at:
+        type: "string"
+      closed_at:
+        type: "string"     
+      actual_time:
+        type: "integer"             
+      rating:
+        type: "integer"   
+  User:
+    type: "object"
+    required:
+      - "id"
+      - "name"
+      - "email"
+      - "password"
+      - "phone_number"
+      - "location_id"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string" 
+      user_type:
+        type: "integer" 
+      email:
+        type: "string" 
+      password:
+        type: "string" 
+      phone_number:
+        type: "string" 
+      location_id:
+        type: "integer" 
+      is_available:
+        type: "boolean" 
+      avg_rating:
+        type: "number" 
+      work_days:
+        type: "string" 
+      working_hours:
+        type: "string"       
+      fcm_id:
+        type: "string"               
+  Client:
+    type: "object"
+    required:
+      - "id"
+      - "client_id"
+      - "name"
+      - "location_id"
+      - "email"
+      - "phone_number"
+    properties:
+      id:
+        type: "integer"
+      client_id:
+        type: "string"
+      name:
+        type: "string"
+      location_id:
+        type: "integer"
+      email:
+        type: "string"
+      phone_number:
+        type: "string"         
+  Location:
+    type: "object"
+    required:
+      - "id"
+      - "name"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+  # Signin payload samples
+  SigninRequestPayload:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+        example: "avishek@geogo.in"    
+      password:
+        type: "string"
+        example: "12345678"   
+  SigninResponsePayload:
+    type: "object"
+    properties:
+      id:
+        type: integer
+        example: 123
+      name:
+        type: string
+        example: Avishek Jana
+      email:
+        type: string
+        example: avishek@geogo.in
+      phone_number:
+        type: string
+        example: 8899199929
+      location_id:
+        type: integer
+        example: 4
+      is_available:
+        type: boolean
+        example: true
+      avg_rating: 
+        type: integer
+        example: 8
+      fcm_id:
+        type: string
+        example: b1c2b1b21b2b1vb2vb1vb2v1n21212
+      access_token:
+        type: string
+        example: sqw1281w1njhj1.b1c2b1b21vb2v1n21212.12iwiqwiuqw8q8  
+  UserDetailsResponse:
+    type: "object"
+    properties:
+      id:
+        type: integer
+        example: 123
+      name:
+        type: string
+        example: Avishek Jana
+      email:
+        type: string
+        example: avishek@geogo.in
+      phone_number:
+        type: string
+        example: 8899199929
+      location_id:
+        type: integer
+        example: 4
+      is_available:
+        type: boolean
+        example: true
+      avg_rating: 
+        type: integer
+        example: 8         
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: X-API-Key

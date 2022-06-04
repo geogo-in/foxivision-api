@@ -17,6 +17,8 @@ basePath: "/v1.0"
 schemes:
   - "http"
   - "https"
+security:
+  - ApiKeyAuth: []
 consumes:
   - "application/json"
 produces:
@@ -39,7 +41,8 @@ tags:
 paths:
   /users/sign_in:
     post:
-      summary:  "User Signin"
+      summary:  "User signin"
+      security: []   # No security
       description:  |
         The Signin endpoint allows you to authorize your application and get an access_token using the email and password.
       tags:
@@ -50,12 +53,12 @@ paths:
           description:  "Sample payload for user signin"
           required: true
           schema:
-            $ref: "#/definitions/SigninRequestPayload"
+            $ref: "#/definitions/SigninRequestBody"
       responses:
         "200":
           description:  "Status-Code: 200 OK"
           schema:
-            $ref: "#/definitions/SigninResponsePayload"
+            $ref: "#/definitions/SigninResponse"
         "401":
           description:  "Status-Code: 401 unauthorized"
           schema:
@@ -80,89 +83,300 @@ paths:
             $ref: "#/definitions/UserDetailsResponse"
   /cases:
     get:
-      summary: "View list of all cases"
-      description:  "View list of all cases"
+      summary: "Get cases"
+      description:  |
+        This endpoint returns the list of all cases. The response can be filtered by: state (open, allocated, in_progress, completed, closed), client, location, due_date, appointment_date, assignee etc.
       tags:
         - "Cases"
+      parameters:
+        - name: state
+          in: query
+          type: string
+          description: |
+            Use this parameter to filter cases by state. Sample values: open, allocated, in_progress, completed, closed
+        - name: client_id
+          in: query
+          type: string
+          description: Filter cases by client ID.
+        - name: location_id
+          in: query
+          type: string
+          description: Filter cases by location ID.
+        - name: due_date
+          in: query
+          type: string      
+          description: Filter cases by due date.
+        - name: appointment_date    
+          in: query
+          type: string      
+          description: Filter cases by appointment date.
+        - name: assignee_id
+          in: query
+          type: string    
+          description: Filter cases by assignee ID.
+        - name: page
+          in: query
+          type: string
+          description: Response of the cases endpoint is paginated by default. Use this parameter to get cases with different page numbers.
+        - name: per
+          in: query
+          type: string    
+          description: By default, the cases endpoint returns 20 results per page. If you need more or less data, tweak this parameter value accordingly.
       responses:
         "200":
-          description:  "Successfully fetched all cases"
+          description:  "Status-Code: 200 OK"
           schema:
-            $ref: "#/definitions/Case"
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "20 results found"
+              meta:
+                type: object
+                properties:
+                  total_result_count:
+                    type: integer
+                    example: 56
+                  page:
+                    type: integer
+                    example: 1
+                  per:
+                    type: integer
+                    example: 20
+              payload:
+                type: array
+                items:
+                  $ref: "#/definitions/Case"
+                example:
+                  - id: 38
+                    case_number: CS129
+                    client_id: 345
+                    location_id:  4
+                    appointment_datetime: 04-06-2022 10AM
+                    state: open
+                    due_date: 05-06-2022 10AM
+                    estimated_date: 04-06-2022 10AM
+                    assignee_id: 123
+                    started_at: 04-06-2022 10AM
+                    closed_at: 04-06-2022 11AM    
+                    actual_time: 60
+                    rating: 9                
+                  - id: 114
+                    case_number: CS130
+                    client_id: 2121
+                    location_id:  5
+                    appointment_datetime: 04-06-2022 10AM
+                    state: allocated
+                    due_date: 05-06-2022 10AM
+                    estimated_date: 04-06-2022 10AM
+                    assignee_id: 45
+                    started_at: 04-06-2022 10AM
+                    closed_at: 04-06-2022 12AM    
+                    actual_time: 120
+                    rating: 8
     post:
-      summary:  "Create a new Case"
-      description:  "Create a new case"
+      summary:  "Create new case"
+      description:  |
+        This endpoint allows us to register a new case.
       tags:
         - "Cases"
       parameters:
-        - name: "case"
-          in: "body"
-          description:  "New case payload"
+        - in: "body"
+          name: "case"
+          description:  "Sample payload for creating a case"
           required: true
           schema:
-            $ref: "#/definitions/Case"
+            $ref: "#/definitions/CreateCaseRequestBody"
       responses:
         "200":
-          description:  "Successfully created a new case"
+          description:  "Status-Code: 200 OK"
           schema:
-            $ref: "#/definitions/Case"
-  /cases/{id}:
-    get:
-      summary:  "View a case"
-      description:  "View a case details"
-      tags:
-        - "Cases" 
-      parameters:
-        - name: "id"
-          in: "path"
-          type: "string"
-          required: true
-      responses:
-        "200":
-          description:  "Details of a case whenever a success reponse received"
-          schema:
-            $ref: "#/definitions/Case"    
-        "404":
-          description:  "Case with supplied ID not found"  
-    put:
-      summary:  "Update a Case"
-      description:  "Update an existing Case"
-      tags:
-        - "Cases" 
-      parameters:
-        - name: "id"
-          in: "path"
-          type: "string"
-          required: true
-        - name: "case"
-          in: "body"
-          description:  "Application update payload"
-          required: true
-          schema:
-            $ref: "#/definitions/Case"
-      responses:
-        "200":
-          description: "Successfully updted case"
-          schema:
-            $ref: "#/definitions/Case"  
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "Case created successfully"
+              meta:
+                type: object
+              payload:          
+                $ref: "#/definitions/Case"
         "422":
-          description: "Invalid data"
+          description:  "Status-Code: 422 Unprocessable Entity"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "error"
+              message:
+                type: string
+                example: "Unable to create this case"
+              meta:
+                type: object 
+              payload:
+                type: object
+                example:
+                  {
+                    case_number: ["Can't be blank", "Should not contain space"],
+                    customer_id: ["Customer not found"]
+                  } 
+
+  /cases/{case_number}:
+    get:
+      summary:  "Get a case details"
+      description:  "This endpoint returns case details by case number. The response includes important details like: appointment datetime, current state, due date, estimated date, assignee details etc."
+      tags:
+        - "Cases" 
+      parameters:
+        - name: "case_number"
+          in: "path"
+          type: "string"
+          required: true
+      responses:
+        "200":
+          description:  "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "A case found with number: CS212"
+              meta:
+                type: object
+              payload:            
+                $ref: "#/definitions/Case"    
+        "404":
+          description:  "No case found"  
+    put:
+      summary:  "Update a case"
+      description:  |
+        This endpoint allows updating the case details.
+      tags:
+        - "Cases" 
+      parameters:
+        - name: "case_number"
+          in: "path"
+          type: "string"
+          required: true
+        - name: "case"
+          in: "body"
+          description:  "Sample payload for updating a case"
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateCaseRequestBody"
+      responses:
+        "200":
+          description: "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "Case updated successfully"
+              meta:
+                type: object
+              payload:          
+                $ref: "#/definitions/Case"
+        "422":
+          description:  "Status-Code: 422 Unprocessable Entity"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "error"
+              message:
+                type: string
+                example: "Unable to update this case"
+              meta:
+                type: object 
+              payload:
+                type: object
+                example:
+                  {
+                    assignee_id: ["Assignee not available on provided datetime"],
+                    appointment_datetime: ["Schedule appointment before due date"]
+                  } 
 
   /clients:
     get:
-      summary: "View list of all clients"
-      description:  "View list of all clients"
+      summary: "Get clients"
+      description:  |
+        This endpoint returns the list of all clients. The response can be filtered by: client's name, location, phone_number etc.
       tags:
         - "Clients"
+      parameters:
+        - name: name
+          in: query
+          type: string
+          description: |
+            Use this parameter to filter clients by name
+        - name: phone_number
+          in: query
+          type: string
+          description: Use this parameter to search client by phone number
+        - name: location_id
+          in: query
+          type: string
+          description: Filter clients by location ID.    
       responses:
         "200":
-          description:  "Successfully fetched all clients"
+          description:  "Status-Code: 200 OK"
           schema:
-            $ref: "#/definitions/Client"
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "20 results found"
+              meta:
+                type: object
+                properties:
+                  total_result_count:
+                    type: integer
+                    example: 56
+                  page:
+                    type: integer
+                    example: 1
+                  per:
+                    type: integer
+                    example: 20
+              payload:
+                type: array
+                items:
+                  $ref: "#/definitions/Client"
+                example:
+                  - id: 38
+                    name: "Apollo Hospital"
+                    email: "apollo.h@gmail.com"
+                    location_id:  4
+                  - id: 32
+                    name: "Fortis Hospital"
+                    email: "fortis@gmail.com"
+                    location_id:  4                    
+                  - id: 32
+                    name: "Medica Hospital"
+                    email: "medica@gmail.com"
+                    location_id:  4                                        
   /clients/{id}:
     get:
-      summary:  "View a client"
-      description:  "View a client details"
+      summary:  "Get a client details"
+      description:  |
+        This endpoint returns client details by ID. The response includes details like: client name, phone number, email ID etc.
       tags:
         - "Clients" 
       parameters:
@@ -172,23 +386,71 @@ paths:
           required: true
       responses:
         "200":
-          description:  "Details of a client whenever a success reponse received"
+          description:  "Status-Code: 200 OK"
           schema:
-            $ref: "#/definitions/Client"    
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "Client found with ID: 21"
+              meta:
+                type: object
+              payload:            
+                $ref: "#/definitions/Client"    
         "404":
-          description:  "Client with supplied ID not found" 
+          description:  "No client found"  
 
   /locations:
     get:
-      summary: "View list of all locations"
-      description:  "View list of all locations"
+      summary: "Get locations"
+      description:  |
+        This endpoint returns the list of all locations. The response can be filtered by: location name.
       tags:
         - "Locations"
+      parameters:
+        - name: name
+          in: query
+          type: string
+          description: |
+            Use this parameter to filter locations by name        
       responses:
         "200":
-          description:  "Successfully fetched all locations"
+          description:  "Status-Code: 200 OK"
           schema:
-            $ref: "#/definitions/Location"
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "20 results found"
+              meta:
+                type: object
+                properties:
+                  total_result_count:
+                    type: integer
+                    example: 23
+                  page:
+                    type: integer
+                    example: 1
+                  per:
+                    type: integer
+                    example: 20
+              payload:
+                type: array
+                items:
+                  $ref: "#/definitions/Location"
+                example:
+                  - id: 1
+                    name: "Kolkata"
+                  - id: 2
+                    name: "Bengaluru"
+                  - id: 3
+                    name: "Mumbai"
     
 # Definitions
 definitions:
@@ -204,14 +466,19 @@ definitions:
     properties:
       id:
         type: "integer"
+        example: 12
       case_number:
         type: "string"
+        example: CS212
       client_id:
         type: "integer"        
+        example: 345
       location_id:
         type: "integer"
+        example: 4
       appointment_datetime:
         type: "string"
+        example: 04-06-2022 10AM
       state:
         type: "string"
         enum:
@@ -221,20 +488,28 @@ definitions:
           - "completed"
           - "closed"
           - "cancelled"
+        example: allocated
       due_date:
         type: "string"
+        example: 05-06-2022 10AM
       estimated_date:
         type: "string"
-      agent_id:
+        example: 04-06-2022 10AM
+      assignee_id:
         type: "integer"
+        example: 123
       started_at:
         type: "string"
+        example: 04-06-2022 10AM
       closed_at:
-        type: "string"     
+        type: "string" 
+        example: 04-06-2022 11AM    
       actual_time:
-        type: "integer"             
+        type: "integer"         
+        example: 60
       rating:
         type: "integer"   
+        example: 9
   User:
     type: "object"
     required:
@@ -273,7 +548,6 @@ definitions:
     type: "object"
     required:
       - "id"
-      - "client_id"
       - "name"
       - "location_id"
       - "email"
@@ -281,8 +555,6 @@ definitions:
     properties:
       id:
         type: "integer"
-      client_id:
-        type: "string"
       name:
         type: "string"
       location_id:
@@ -301,17 +573,20 @@ definitions:
         type: "integer"
       name:
         type: "string"
-  # Signin payload samples
-  SigninRequestPayload:
+  # User payload samples
+  SigninRequestBody:
     type: "object"
     properties:
-      email:
-        type: "string"
-        example: "avishek@geogo.in"    
-      password:
-        type: "string"
-        example: "12345678"   
-  SigninResponsePayload:
+      user:
+        type: object
+        properties: 
+          email:
+            type: "string"
+            example: "avishek@geogo.in"    
+          password:
+            type: "string"
+            example: "12345678"   
+  SigninResponse:
     type: "object"
     properties:
       id:
@@ -364,7 +639,47 @@ definitions:
         example: true
       avg_rating: 
         type: integer
-        example: 8         
+        example: 8      
+  # Case payload samples
+  CreateCaseRequestBody:
+    type: object   
+    properties:
+      case:
+        type: object
+        properties: 
+          case_number:
+            type: "string"
+            example: Cx100929  
+          client_id:
+            type: "string"
+            example: 32     
+          appointment_datetime:
+            type: "string"
+            example: 04-06-2022 10AM      
+          location_id:
+            type: "string"
+            example: 4         
+  UpdateCaseRequestBody:   
+    type: object   
+    properties:
+      case:
+        type: object
+        properties: 
+          state:
+            type: "string"
+            example: in_progress       
+          assignee_id:
+            type: number
+            example: 4                                            
+          appointment_datetime:
+            type: "string"
+            example: 04-06-2022 10AM 
+          due_date:
+            type: "string"
+            example: 04-06-2022 10AM   
+          estimated_date:
+            type: string
+            example: 04-06-2022 10AM               
 securityDefinitions:
   ApiKeyAuth:
     type: apiKey

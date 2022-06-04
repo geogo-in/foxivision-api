@@ -85,7 +85,7 @@ paths:
     get:
       summary: "Get cases"
       description:  |
-        This endpoint returns the list of all cases. The response can be filtered by: state (open, allocated, in_progress, completed, closed), client, location, due_date, appointment_date, assignee etc.
+        This endpoint returns the list of all cases. The response can be filtered by: state (open, allocated, in_progress, completed, closed), client, location, appointment_date, assignee, date (using from_date), date range (using from_date and to_date) etc.
       tags:
         - "Cases"
       parameters:
@@ -102,10 +102,6 @@ paths:
           in: query
           type: string
           description: Filter cases by location ID.
-        - name: due_date
-          in: query
-          type: string      
-          description: Filter cases by due date.
         - name: appointment_date    
           in: query
           type: string      
@@ -114,6 +110,14 @@ paths:
           in: query
           type: string    
           description: Filter cases by assignee ID.
+        - name: from_date    
+          in: query
+          type: string      
+          description: To filter results by a date, use this parameter.
+        - name: to_date    
+          in: query
+          type: string      
+          description: To filter results by a date range, use to_date parameter along with from_date parameter.                    
         - name: page
           in: query
           type: string
@@ -157,8 +161,6 @@ paths:
                     location_id:  4
                     appointment_datetime: 04-06-2022 10AM
                     state: open
-                    due_date: 05-06-2022 10AM
-                    estimated_date: 04-06-2022 10AM
                     assignee_id: 123
                     started_at: 04-06-2022 10AM
                     closed_at: 04-06-2022 11AM    
@@ -170,8 +172,6 @@ paths:
                     location_id:  5
                     appointment_datetime: 04-06-2022 10AM
                     state: allocated
-                    due_date: 05-06-2022 10AM
-                    estimated_date: 04-06-2022 10AM
                     assignee_id: 45
                     started_at: 04-06-2022 10AM
                     closed_at: 04-06-2022 12AM    
@@ -230,7 +230,7 @@ paths:
   /cases/{case_number}:
     get:
       summary:  "Get a case details"
-      description:  "This endpoint returns case details by case number. The response includes important details like: appointment datetime, current state, due date, estimated date, assignee details etc."
+      description:  "This endpoint returns case details by case number. The response includes important details like: appointment datetime, current state, due date, assignee details etc."
       tags:
         - "Cases" 
       parameters:
@@ -259,7 +259,7 @@ paths:
     put:
       summary:  "Update a case"
       description:  |
-        This endpoint allows updating the case details.
+        This endpoint allows updating the case details, like: changing state, adding comments with images etc. 
       tags:
         - "Cases" 
       parameters:
@@ -309,7 +309,112 @@ paths:
                     assignee_id: ["Assignee not available on provided datetime"],
                     appointment_datetime: ["Schedule appointment before due date"]
                   } 
-
+  /cases/{case_number}/add_comment:
+    post:
+      summary:  "Add comment on a case"
+      description:  |
+        This endpoint allows user to add comments against a case number. A comment can contain text or image or both.
+      tags:
+        - "Cases" 
+      parameters:
+        - name: "case_number"
+          in: "path"
+          type: "string"
+          required: true
+        - name: "case_comment"
+          in: "body"
+          description:  "Sample payload for adding a comment against a case"
+          required: true
+          schema:
+            $ref: "#/definitions/AddCaseCommentRequestBody"
+      responses:
+        "200":
+          description: "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "Commented successfully"
+              meta:
+                type: object
+              payload:          
+                $ref: "#/definitions/CaseComment"
+        "422":
+          description:  "Status-Code: 422 Unprocessable Entity"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "error"
+              message:
+                type: string
+                example: "Unable to add comment"
+              meta:
+                type: object 
+              payload:
+                type: object
+                example:
+                  {
+                    attachment: ["File too large, should be less than 10MB."]
+                  }  
+  /cases/{case_number}/log_time:
+    post:
+      summary:  "Log time on a case"
+      description:  |
+        This endpoint allows user to log time against a case number. This update can also contain remarks and image, but it's optional.
+      tags:
+        - "Cases" 
+      parameters:
+        - name: "case_number"
+          in: "path"
+          type: "string"
+          required: true
+        - name: "case_time_log"
+          in: "body"
+          description:  "Sample payload for logging time against a case"
+          required: true
+          schema:
+            $ref: "#/definitions/CaseTimeLogRequestBody"
+      responses:
+        "200":
+          description: "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "Logged time successfully"
+              meta:
+                type: object
+              payload:          
+                $ref: "#/definitions/CaseTimeLog"
+        "422":
+          description:  "Status-Code: 422 Unprocessable Entity"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "error"
+              message:
+                type: string
+                example: "Unable to log time"
+              meta:
+                type: object 
+              payload:
+                type: object
+                example:
+                  {
+                    attachment: ["File too large, should be less than 10MB."]
+                  }                       
   /clients:
     get:
       summary: "Get clients"
@@ -447,10 +552,13 @@ paths:
                 example:
                   - id: 1
                     name: "Kolkata"
+                    plus_code: HCH8+R3
                   - id: 2
                     name: "Bengaluru"
+                    plus_code: XJJ2+7X
                   - id: 3
                     name: "Mumbai"
+                    plus_code: 3V6J+3C
     
 # Definitions
 definitions:
@@ -461,7 +569,6 @@ definitions:
       - "case_number"
       - "client_id"
       - "location_id"
-      - "due_date"
       - "appointment_datetime"
     properties:
       id:
@@ -489,12 +596,6 @@ definitions:
           - "closed"
           - "cancelled"
         example: allocated
-      due_date:
-        type: "string"
-        example: 05-06-2022 10AM
-      estimated_date:
-        type: "string"
-        example: 04-06-2022 10AM
       assignee_id:
         type: "integer"
         example: 123
@@ -510,6 +611,46 @@ definitions:
       rating:
         type: "integer"   
         example: 9
+  CaseComment:
+    type: object
+    required:
+      - "case_id"
+      - "user_id"
+    properties:
+      id:
+        type: integer
+        example: 12
+      case_id:
+        type: integer
+        example: 321
+      comment:
+        type: string
+        example: Reached at location
+      user_id:
+        type: integer
+        example: 32
+  CaseTimeLog:
+    type: object
+    required:
+      - "case_id"
+      - "user_id"
+      - "logged_time_in_min"
+    properties:
+      id:
+        type: integer
+        example: 12
+      case_id:
+        type: integer
+        example: 321
+      user_id:
+        type: integer
+        example: 32        
+      logged_time_in_min:
+        type: integer
+        example: 60
+      remarks:
+        type: string
+        example: "Fixed the camera module"
   User:
     type: "object"
     required:
@@ -562,7 +703,13 @@ definitions:
       email:
         type: "string"
       phone_number:
-        type: "string"         
+        type: "string"      
+      contact_person_name:
+        type: string
+      contact_person_designation:
+        type: string
+      contact_person_phone:
+        type: string
   Location:
     type: "object"
     required:
@@ -573,6 +720,8 @@ definitions:
         type: "integer"
       name:
         type: "string"
+      plus_code:
+        type: string
   # User payload samples
   SigninRequestBody:
     type: "object"
@@ -674,12 +823,42 @@ definitions:
           appointment_datetime:
             type: "string"
             example: 04-06-2022 10AM 
-          due_date:
+          case_comments_attributes:
+            type: array
+            items:
+              example:
+                {
+                  "comment": "Reached at location",
+                  "attachment": <file>
+                }
+              # $ref: "#/definitions/CaseComment"
+  AddCaseCommentRequestBody:
+    type: object   
+    properties:
+      case_comment:
+        type: object
+        properties: 
+          comment:
             type: "string"
-            example: 04-06-2022 10AM   
-          estimated_date:
-            type: string
-            example: 04-06-2022 10AM               
+            example: Reached at client location  
+          attachment:
+            type: "string"
+            example: '<file>'
+  CaseTimeLogRequestBody:
+    type: object   
+    properties:
+      case_time_log:
+        type: object
+        properties: 
+          logged_time_in_min:
+            type: "integer"
+            example: 60
+          remarks:
+            type: "string"
+            example: "Fixed camera module"            
+          attachment:
+            type: "string"
+            example: '<file>'            
 securityDefinitions:
   ApiKeyAuth:
     type: apiKey

@@ -35,6 +35,8 @@ tags:
     description:  "Clients are end-users or customers who are raising all these cases or service requsts. Use clients endpoints "
   - name: "Locations"
     description:  "Locations are actual cities, districts where agents are prividing serivces."
+  - name: "Stats"
+    description:  "Use these endpoints to get useful statistics based on location, client, user etc."
 
     
 # Paths
@@ -158,7 +160,9 @@ paths:
                   - id: 38
                     case_number: CS129
                     client_id: 345
+                    client_name: Apollo Hospital
                     location_id:  4
+                    location_name:  Kolkata
                     appointment_datetime: 04-06-2022 10AM
                     state: open
                     assignee_id: 123
@@ -169,7 +173,9 @@ paths:
                   - id: 114
                     case_number: CS130
                     client_id: 2121
+                    client_name: Fortis Hospital
                     location_id:  5
+                    location_name:  Delhi
                     appointment_datetime: 04-06-2022 10AM
                     state: allocated
                     assignee_id: 45
@@ -559,7 +565,46 @@ paths:
                   - id: 3
                     name: "Mumbai"
                     plus_code: 3V6J+3C
-    
+  /stats/user-dashboard:
+    get:
+      summary: Get stats required for user dashboard
+      description: |
+        This endpoint returns few key stats for user, like: number of total cases, completed cases, open cases, overdue cases etc. The response can be filtered by: date range using the from_date and to_date parameter.
+      tags:
+        - "Stats"
+      parameters:
+        - name: from_date    
+          in: query
+          type: string      
+          description: To filter results by a date, use this parameter.
+        - name: to_date    
+          in: query
+          type: string      
+          description: To filter results by a date range, use to_date parameter along with from_date parameter.    
+      responses:
+        "200":
+          description:  "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "Stats found"
+              meta:
+                type: object
+              payload:
+                type: object
+                example:
+                  {
+                    total_cases: 20,
+                    completed_cases: 12,
+                    open_cases: 5,
+                    overdue_cases: 3
+                  }            
+
 # Definitions
 definitions:
   Case:

@@ -13,7 +13,7 @@ info:
       That complete flow, from managing client's appointments, to tracking service engineers, can be easily managed using this all-in-one Fieldtrack platform.
       
 host: "138.201.134.48:3020"
-basePath: "/v1.0"
+basePath: "/api"
 schemes:
   - "http"
   - "https"

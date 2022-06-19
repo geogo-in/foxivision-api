@@ -776,7 +776,7 @@ definitions:
         properties: 
           email:
             type: "string"
-            example: "avishek@geogo.in"    
+            example: "test@geogo.in"    
           password:
             type: "string"
             example: "12345678"   

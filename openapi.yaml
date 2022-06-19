@@ -10,7 +10,7 @@ info:
     Primary use case:
     
     i) Companies, who are providing in-premise services for maintenance of home or industrial appliances can use FieldTrack. Once they receives a service request from a client, based on the location and type of case, they allocate a service engineer. Then the service engineer visits client's location to perform that maintenance job.
-      That complete flow, from managing client's cases, to tracking service engineers, can be easily managed using this all-in-one Fieldtrack platform.
+      That complete flow, from managing client's appointments, to tracking service engineers, can be easily managed using this all-in-one Fieldtrack platform.
       
 host: "fieldtrack.xyz"
 basePath: "/v1.0"
@@ -26,13 +26,13 @@ produces:
 tags:
   - name: "Users"
     description:  |
-      In FieldTrack, users can be agents, service engineers or technicians. The users endpoints can be used to login to the system, to check status of assigned cases and to update details on work performed at client location etc.
-  - name: "Cases"
+      In FieldTrack, users can be agents, service engineers or technicians. The users endpoints can be used to login to the system, to check status of assigned appointments and to update details on work performed at client location etc.
+  - name: "Appointments"
     description: |
-      Cases are nothing but service requests coming from clients or customers.
-      Cases endpoints can be used to raise new service request or case, get list of open cases for an user and to update a case.
+      Appointments are nothing but service requests coming from clients or customers.
+      Appointments endpoints can be used to raise new service request or case, get list of open appointments for an user and to update a case.
   - name: "Clients"
-    description:  "Clients are end-users or customers who are raising all these cases or service requsts. Use clients endpoints "
+    description:  "Clients are end-users or customers who are raising all these appointments or service requsts. Use clients endpoints "
   - name: "Locations"
     description:  "Locations are actual cities, districts where agents are prividing serivces."
   - name: "Stats"
@@ -83,35 +83,35 @@ paths:
           description:  "Status-Code: 200 OK"
           schema:
             $ref: "#/definitions/UserDetailsResponse"
-  /cases:
+  /appointments:
     get:
-      summary: "Get cases"
+      summary: "Get appointments"
       description:  |
-        This endpoint returns the list of all cases. The response can be filtered by: state (open, allocated, in_progress, completed, closed), client, location, appointment_date, assignee, date (using from_date), date range (using from_date and to_date) etc.
+        This endpoint returns the list of all appointments. The response can be filtered by: state (open, allocated, in_progress, completed, closed), client, location, appointment_date, assignee, date (using from_date), date range (using from_date and to_date) etc.
       tags:
-        - "Cases"
+        - "Appointments"
       parameters:
         - name: state
           in: query
           type: string
           description: |
-            Use this parameter to filter cases by state. Sample values: open, allocated, in_progress, completed, closed
+            Use this parameter to filter appointments by state. Sample values: open, allocated, in_progress, completed, closed
         - name: client_id
           in: query
           type: string
-          description: Filter cases by client ID.
+          description: Filter appointments by client ID.
         - name: location_id
           in: query
           type: string
-          description: Filter cases by location ID.
+          description: Filter appointments by location ID.
         - name: appointment_date    
           in: query
           type: string      
-          description: Filter cases by appointment date.
+          description: Filter appointments by appointment date.
         - name: assignee_id
           in: query
           type: string    
-          description: Filter cases by assignee ID.
+          description: Filter appointments by assignee ID.
         - name: from_date    
           in: query
           type: string      
@@ -123,11 +123,11 @@ paths:
         - name: page
           in: query
           type: string
-          description: Response of the cases endpoint is paginated by default. Use this parameter to get cases with different page numbers.
+          description: Response of the appointments endpoint is paginated by default. Use this parameter to get appointments with different page numbers.
         - name: per
           in: query
           type: string    
-          description: By default, the cases endpoint returns 20 results per page. If you need more or less data, tweak this parameter value accordingly.
+          description: By default, the appointments endpoint returns 20 results per page. If you need more or less data, tweak this parameter value accordingly.
       responses:
         "200":
           description:  "Status-Code: 200 OK"
@@ -155,7 +155,7 @@ paths:
               payload:
                 type: array
                 items:
-                  $ref: "#/definitions/Case"
+                  $ref: "#/definitions/Appointment"
                 example:
                   - id: 38
                     case_number: CS129
@@ -188,14 +188,14 @@ paths:
       description:  |
         This endpoint allows us to register a new case.
       tags:
-        - "Cases"
+        - "Appointments"
       parameters:
         - in: "body"
           name: "case"
           description:  "Sample payload for creating a case"
           required: true
           schema:
-            $ref: "#/definitions/CreateCaseRequestBody"
+            $ref: "#/definitions/CreateAppointmentRequestBody"
       responses:
         "200":
           description:  "Status-Code: 200 OK"
@@ -207,11 +207,11 @@ paths:
                 example: "ok"
               message:
                 type: string
-                example: "Case created successfully"
+                example: "Appointment created successfully"
               meta:
                 type: object
               payload:          
-                $ref: "#/definitions/Case"
+                $ref: "#/definitions/Appointment"
         "422":
           description:  "Status-Code: 422 Unprocessable Entity"
           schema:
@@ -233,12 +233,12 @@ paths:
                     customer_id: ["Customer not found"]
                   } 
 
-  /cases/{case_number}:
+  /appointments/{case_number}:
     get:
       summary:  "Get a case details"
       description:  "This endpoint returns case details by case number. The response includes important details like: appointment datetime, current state, due date, assignee details etc."
       tags:
-        - "Cases" 
+        - "Appointments" 
       parameters:
         - name: "case_number"
           in: "path"
@@ -259,7 +259,7 @@ paths:
               meta:
                 type: object
               payload:            
-                $ref: "#/definitions/Case"    
+                $ref: "#/definitions/Appointment"    
         "404":
           description:  "No case found"  
     put:
@@ -267,7 +267,7 @@ paths:
       description:  |
         This endpoint allows updating the case details, like: changing state, adding comments with images etc. 
       tags:
-        - "Cases" 
+        - "Appointments" 
       parameters:
         - name: "case_number"
           in: "path"
@@ -278,7 +278,7 @@ paths:
           description:  "Sample payload for updating a case"
           required: true
           schema:
-            $ref: "#/definitions/UpdateCaseRequestBody"
+            $ref: "#/definitions/UpdateAppointmentRequestBody"
       responses:
         "200":
           description: "Status-Code: 200 OK"
@@ -290,11 +290,11 @@ paths:
                 example: "ok"
               message:
                 type: string
-                example: "Case updated successfully"
+                example: "Appointment updated successfully"
               meta:
                 type: object
               payload:          
-                $ref: "#/definitions/Case"
+                $ref: "#/definitions/Appointment"
         "422":
           description:  "Status-Code: 422 Unprocessable Entity"
           schema:
@@ -315,13 +315,13 @@ paths:
                     assignee_id: ["Assignee not available on provided datetime"],
                     appointment_datetime: ["Schedule appointment before due date"]
                   } 
-  /cases/{case_number}/add_comment:
+  /appointments/{case_number}/add_comment:
     post:
       summary:  "Add comment on a case"
       description:  |
         This endpoint allows user to add comments against a case number. A comment can contain text or image or both.
       tags:
-        - "Cases" 
+        - "Appointments" 
       parameters:
         - name: "case_number"
           in: "path"
@@ -332,7 +332,7 @@ paths:
           description:  "Sample payload for adding a comment against a case"
           required: true
           schema:
-            $ref: "#/definitions/AddCaseCommentRequestBody"
+            $ref: "#/definitions/AddAppointmentCommentRequestBody"
       responses:
         "200":
           description: "Status-Code: 200 OK"
@@ -348,7 +348,7 @@ paths:
               meta:
                 type: object
               payload:          
-                $ref: "#/definitions/CaseComment"
+                $ref: "#/definitions/AppointmentComment"
         "422":
           description:  "Status-Code: 422 Unprocessable Entity"
           schema:
@@ -368,13 +368,13 @@ paths:
                   {
                     attachment: ["File too large, should be less than 10MB."]
                   }  
-  /cases/{case_number}/log_time:
+  /appointments/{case_number}/log_time:
     post:
       summary:  "Log time on a case"
       description:  |
         This endpoint allows user to log time against a case number. This update can also contain remarks and image, but it's optional.
       tags:
-        - "Cases" 
+        - "Appointments" 
       parameters:
         - name: "case_number"
           in: "path"
@@ -385,7 +385,7 @@ paths:
           description:  "Sample payload for logging time against a case"
           required: true
           schema:
-            $ref: "#/definitions/CaseTimeLogRequestBody"
+            $ref: "#/definitions/AppointmentTimeLogRequestBody"
       responses:
         "200":
           description: "Status-Code: 200 OK"
@@ -401,7 +401,7 @@ paths:
               meta:
                 type: object
               payload:          
-                $ref: "#/definitions/CaseTimeLog"
+                $ref: "#/definitions/AppointmentTimeLog"
         "422":
           description:  "Status-Code: 422 Unprocessable Entity"
           schema:
@@ -569,7 +569,7 @@ paths:
     get:
       summary: Get stats required for user dashboard
       description: |
-        This endpoint returns few key stats for user, like: number of total cases, completed cases, open cases, overdue cases etc. The response can be filtered by: date range using the from_date and to_date parameter.
+        This endpoint returns few key stats for user, like: number of total appointments, completed appointments, open appointments, overdue appointments etc. The response can be filtered by: date range using the from_date and to_date parameter.
       tags:
         - "Stats"
       parameters:
@@ -607,7 +607,7 @@ paths:
 
 # Definitions
 definitions:
-  Case:
+  Appointment:
     type: "object"
     required:
       - "id"
@@ -656,7 +656,7 @@ definitions:
       rating:
         type: "integer"   
         example: 9
-  CaseComment:
+  AppointmentComment:
     type: object
     required:
       - "case_id"
@@ -674,7 +674,7 @@ definitions:
       user_id:
         type: integer
         example: 32
-  CaseTimeLog:
+  AppointmentTimeLog:
     type: object
     required:
       - "case_id"
@@ -834,8 +834,8 @@ definitions:
       avg_rating: 
         type: integer
         example: 8      
-  # Case payload samples
-  CreateCaseRequestBody:
+  # Appointment payload samples
+  CreateAppointmentRequestBody:
     type: object   
     properties:
       case:
@@ -853,7 +853,7 @@ definitions:
           location_id:
             type: "string"
             example: 4         
-  UpdateCaseRequestBody:   
+  UpdateAppointmentRequestBody:   
     type: object   
     properties:
       case:
@@ -876,8 +876,8 @@ definitions:
                   "comment": "Reached at location",
                   "attachment": <file>
                 }
-              # $ref: "#/definitions/CaseComment"
-  AddCaseCommentRequestBody:
+              # $ref: "#/definitions/AppointmentComment"
+  AddAppointmentCommentRequestBody:
     type: object   
     properties:
       case_comment:
@@ -889,7 +889,7 @@ definitions:
           attachment:
             type: "string"
             example: '<file>'
-  CaseTimeLogRequestBody:
+  AppointmentTimeLogRequestBody:
     type: object   
     properties:
       case_time_log:

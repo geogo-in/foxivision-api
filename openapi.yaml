@@ -9,10 +9,10 @@ info:
     
     Primary use case:
     
-    i) Companies, who are providing in-premise services for maintenance of home or industrial appliances can use FieldTrack. Once they receives a service request from a client, based on the location and type of case, they allocate a service engineer. Then the service engineer visits client's location to perform that maintenance job.
+    i) Companies, who are providing in-premise services for maintenance of home or industrial appliances can use FieldTrack. Once they receives a service request from a client, based on the location and type of appointment, they allocate a service engineer. Then the service engineer visits client's location to perform that maintenance job.
       That complete flow, from managing client's appointments, to tracking service engineers, can be easily managed using this all-in-one Fieldtrack platform.
       
-host: "fieldtrack.xyz"
+host: "138.201.134.48:3020"
 basePath: "/v1.0"
 schemes:
   - "http"
@@ -30,7 +30,7 @@ tags:
   - name: "Appointments"
     description: |
       Appointments are nothing but service requests coming from clients or customers.
-      Appointments endpoints can be used to raise new service request or case, get list of open appointments for an user and to update a case.
+      Appointments endpoints can be used to raise new service request or case, get list of open appointments for an user and to update a appointment.
   - name: "Clients"
     description:  "Clients are end-users or customers who are raising all these appointments or service requsts. Use clients endpoints "
   - name: "Locations"
@@ -184,15 +184,15 @@ paths:
                     actual_time: 120
                     rating: 8
     post:
-      summary:  "Create new case"
+      summary:  "Create new appointment"
       description:  |
-        This endpoint allows us to register a new case.
+        This endpoint allows us to register a new appointment.
       tags:
         - "Appointments"
       parameters:
         - in: "body"
-          name: "case"
-          description:  "Sample payload for creating a case"
+          name: "appointment"
+          description:  "Sample payload for creating a appointment"
           required: true
           schema:
             $ref: "#/definitions/CreateAppointmentRequestBody"
@@ -222,7 +222,7 @@ paths:
                 example: "error"
               message:
                 type: string
-                example: "Unable to create this case"
+                example: "Unable to create this appointment"
               meta:
                 type: object 
               payload:
@@ -235,8 +235,8 @@ paths:
 
   /appointments/{case_number}:
     get:
-      summary:  "Get a case details"
-      description:  "This endpoint returns case details by case number. The response includes important details like: appointment datetime, current state, due date, assignee details etc."
+      summary:  "Get a appointment details"
+      description:  "This endpoint returns appointment details by appointment number. The response includes important details like: appointment datetime, current state, due date, assignee details etc."
       tags:
         - "Appointments" 
       parameters:
@@ -255,17 +255,17 @@ paths:
                 example: "ok"
               message:
                 type: string
-                example: "A case found with number: CS212"
+                example: "A appointment found with number: CS212"
               meta:
                 type: object
               payload:            
                 $ref: "#/definitions/Appointment"    
         "404":
-          description:  "No case found"  
+          description:  "No appointment found"  
     put:
-      summary:  "Update a case"
+      summary:  "Update a appointment"
       description:  |
-        This endpoint allows updating the case details, like: changing state, adding comments with images etc. 
+        This endpoint allows updating the appointment details, like: changing state, adding comments with images etc. 
       tags:
         - "Appointments" 
       parameters:
@@ -275,7 +275,7 @@ paths:
           required: true
         - name: "case"
           in: "body"
-          description:  "Sample payload for updating a case"
+          description:  "Sample payload for updating a appointment"
           required: true
           schema:
             $ref: "#/definitions/UpdateAppointmentRequestBody"
@@ -317,9 +317,9 @@ paths:
                   } 
   /appointments/{case_number}/add_comment:
     post:
-      summary:  "Add comment on a case"
+      summary:  "Add comment on a appointment"
       description:  |
-        This endpoint allows user to add comments against a case number. A comment can contain text or image or both.
+        This endpoint allows user to add comments against a appointment number. A comment can contain text or image or both.
       tags:
         - "Appointments" 
       parameters:
@@ -329,7 +329,7 @@ paths:
           required: true
         - name: "case_comment"
           in: "body"
-          description:  "Sample payload for adding a comment against a case"
+          description:  "Sample payload for adding a comment against a appointment"
           required: true
           schema:
             $ref: "#/definitions/AddAppointmentCommentRequestBody"
@@ -370,9 +370,9 @@ paths:
                   }  
   /appointments/{case_number}/log_time:
     post:
-      summary:  "Log time on a case"
+      summary:  "Log time on a appointment"
       description:  |
-        This endpoint allows user to log time against a case number. This update can also contain remarks and image, but it's optional.
+        This endpoint allows user to log time against a appointment number. This update can also contain remarks and image, but it's optional.
       tags:
         - "Appointments" 
       parameters:
@@ -382,7 +382,7 @@ paths:
           required: true
         - name: "case_time_log"
           in: "body"
-          description:  "Sample payload for logging time against a case"
+          description:  "Sample payload for logging time against a appointment"
           required: true
           schema:
             $ref: "#/definitions/AppointmentTimeLogRequestBody"
@@ -659,13 +659,13 @@ definitions:
   AppointmentComment:
     type: object
     required:
-      - "case_id"
+      - "appointment_id"
       - "user_id"
     properties:
       id:
         type: integer
         example: 12
-      case_id:
+      appointment_id:
         type: integer
         example: 321
       comment:
@@ -677,14 +677,14 @@ definitions:
   AppointmentTimeLog:
     type: object
     required:
-      - "case_id"
+      - "appointment_id"
       - "user_id"
       - "logged_time_in_min"
     properties:
       id:
         type: integer
         example: 12
-      case_id:
+      appointment_id:
         type: integer
         example: 321
       user_id:
@@ -838,7 +838,7 @@ definitions:
   CreateAppointmentRequestBody:
     type: object   
     properties:
-      case:
+      appointment:
         type: object
         properties: 
           case_number:
@@ -856,7 +856,7 @@ definitions:
   UpdateAppointmentRequestBody:   
     type: object   
     properties:
-      case:
+      appointment:
         type: object
         properties: 
           state:
@@ -868,7 +868,7 @@ definitions:
           appointment_datetime:
             type: "string"
             example: 04-06-2022 10AM 
-          case_comments_attributes:
+          appointment_comments_attributes:
             type: array
             items:
               example:
@@ -880,7 +880,7 @@ definitions:
   AddAppointmentCommentRequestBody:
     type: object   
     properties:
-      case_comment:
+      appointment_comment:
         type: object
         properties: 
           comment:
@@ -892,7 +892,7 @@ definitions:
   AppointmentTimeLogRequestBody:
     type: object   
     properties:
-      case_time_log:
+      appointment_time_log:
         type: object
         properties: 
           logged_time_in_min:

@@ -35,7 +35,7 @@ tags:
     description:  "Clients are end-users or customers who are raising all these appointments or service requsts. Use clients endpoints "
   - name: "Locations"
     description:  "Locations are actual cities, districts where agents are prividing serivces."
-  - name: "Stats"
+  - name: "Stistics"
     description:  "Use these endpoints to get useful statistics based on location, client, user etc."
 
     
@@ -60,7 +60,7 @@ paths:
         "200":
           description:  "Status-Code: 200 OK"
           schema:
-            $ref: "#/definitions/SigninResponse"
+            $ref: "#/definitions/UserDetailsResponse"
         "401":
           description:  "Status-Code: 401 unauthorized"
           schema:
@@ -232,8 +232,7 @@ paths:
                     case_number: ["Can't be blank", "Should not contain space"],
                     customer_id: ["Customer not found"]
                   } 
-
-  /appointments/{case_number}:
+  /appointments/{appointment_id}:
     get:
       summary:  "Get a appointment details"
       description:  "This endpoint returns appointment details by appointment number. The response includes important details like: appointment datetime, current state, due date, assignee details etc."
@@ -269,11 +268,11 @@ paths:
       tags:
         - "Appointments" 
       parameters:
-        - name: "case_number"
+        - name: "appointment_id"
           in: "path"
           type: "string"
           required: true
-        - name: "case"
+        - name: "appointment"
           in: "body"
           description:  "Sample payload for updating a appointment"
           required: true
@@ -315,7 +314,7 @@ paths:
                     assignee_id: ["Assignee not available on provided datetime"],
                     appointment_datetime: ["Schedule appointment before due date"]
                   } 
-  /appointments/{case_number}/add_comment:
+  /appointments/{appointment_id}/add_comment:
     post:
       summary:  "Add comment on a appointment"
       description:  |
@@ -368,7 +367,7 @@ paths:
                   {
                     attachment: ["File too large, should be less than 10MB."]
                   }  
-  /appointments/{case_number}/log_time:
+  /appointments/{appointment_id}/log_time:
     post:
       summary:  "Log time on a appointment"
       description:  |
@@ -513,7 +512,6 @@ paths:
                 $ref: "#/definitions/Client"    
         "404":
           description:  "No client found"  
-
   /locations:
     get:
       summary: "Get locations"
@@ -565,13 +563,13 @@ paths:
                   - id: 3
                     name: "Mumbai"
                     plus_code: 3V6J+3C
-  /stats/user-dashboard:
+  /statistics/user_dashboard:
     get:
       summary: Get stats required for user dashboard
       description: |
         This endpoint returns few key stats for user, like: number of total appointments, completed appointments, open appointments, overdue appointments etc. The response can be filtered by: date range using the from_date and to_date parameter.
       tags:
-        - "Stats"
+        - "Statistics"
       parameters:
         - name: from_date    
           in: query
@@ -621,7 +619,7 @@ definitions:
         example: 12
       case_number:
         type: "string"
-        example: CS212
+        example: "CS2125"
       client_id:
         type: "integer"        
         example: 345
@@ -630,13 +628,14 @@ definitions:
         example: 4
       appointment_datetime:
         type: "string"
-        example: 04-06-2022 10AM
+        example: "2022-06-10T10:30:00.000Z"
       state:
         type: "string"
         enum:
           - "open"
           - "allocated"        
           - "in_progress"
+          - "on_hold"
           - "completed"
           - "closed"
           - "cancelled"
@@ -825,15 +824,48 @@ definitions:
       phone_number:
         type: string
         example: 8899199929
-      location_id:
-        type: integer
-        example: 4
       is_available:
         type: boolean
         example: true
       avg_rating: 
         type: integer
-        example: 8      
+        example: 8
+      working_days:
+        type: string
+        example: "[\"Sunday\", \"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\", \"Saturday\"]"
+      address:
+        type: string
+        example: "Kolkata"
+      latitude:
+        type: string
+        example: 22.123121      
+      longitude:
+        type: string
+        example: 77.223123
+      working_hour_start_at:
+        type: string
+        example: "2022-06-21T09:24:00.000Z"
+      working_hour_end_at:
+        type: string        
+        example: "2022-06-21T20:24:00.000Z"
+      user_type:
+        type: string
+        example: "Agent"
+      location:
+        type: object
+        properties:
+          id:
+            type: integer
+            example: 1
+          name:
+            type: string
+            example: "FE-488, Saltlake, Sector-3, Kolkata"
+          latitude:
+            type: string
+            example: "22.525570"
+          longitude:
+            type: string
+            example: "88.399990"
   # Appointment payload samples
   CreateAppointmentRequestBody:
     type: object   
@@ -859,23 +891,34 @@ definitions:
       appointment:
         type: object
         properties: 
-          state:
+          aasm_state:
             type: "string"
             example: in_progress       
-          assignee_id:
+          agent_id:
             type: number
             example: 4                                            
           appointment_datetime:
             type: "string"
-            example: 04-06-2022 10AM 
-          appointment_comments_attributes:
+            example: "2022-06-10T10:30:00.000Z"
+          comments_attributes:
             type: array
             items:
               example:
                 {
+                  "user_id": 1,
                   "comment": "Reached at location",
-                  "attachment": <file>
+                  "photos": <file>
                 }
+          time_logs_attributes:
+            type: array
+            items:
+              example:
+                {
+                  "user_id": 1,
+                  "logged_time_in_min": 120,
+                  "remarks": "Task Completed"
+                }                
+                
               # $ref: "#/definitions/AppointmentComment"
   AddAppointmentCommentRequestBody:
     type: object   
@@ -908,4 +951,4 @@ securityDefinitions:
   ApiKeyAuth:
     type: apiKey
     in: header
-    name: X-API-Key
+    name: Authorization

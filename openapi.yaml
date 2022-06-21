@@ -108,7 +108,7 @@ paths:
           in: query
           type: string      
           description: Filter appointments by appointment date.
-        - name: assignee_id
+        - name: agent_id
           in: query
           type: string    
           description: Filter appointments by assignee ID.
@@ -239,7 +239,7 @@ paths:
       tags:
         - "Appointments" 
       parameters:
-        - name: "case_number"
+        - name: "appointment_id"
           in: "path"
           type: "string"
           required: true
@@ -322,7 +322,7 @@ paths:
       tags:
         - "Appointments" 
       parameters:
-        - name: "case_number"
+        - name: "appointment_id"
           in: "path"
           type: "string"
           required: true
@@ -375,7 +375,7 @@ paths:
       tags:
         - "Appointments" 
       parameters:
-        - name: "case_number"
+        - name: "appointment_id"
           in: "path"
           type: "string"
           required: true

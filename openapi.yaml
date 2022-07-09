@@ -12,7 +12,8 @@ info:
     i) Companies, who are providing in-premise services for maintenance of home or industrial appliances can use FieldTrack. Once they receives a service request from a client, based on the location and type of appointment, they allocate a service engineer. Then the service engineer visits client's location to perform that maintenance job.
       That complete flow, from managing client's appointments, to tracking service engineers, can be easily managed using this all-in-one Fieldtrack platform.
       
-host: "138.201.134.48:3020"
+# host: "138.201.134.48:3020"
+host: "165.22.208.221"
 basePath: "/api"
 schemes:
   - "http"
@@ -35,10 +36,11 @@ tags:
     description:  "Clients are end-users or customers who are raising all these appointments or service requsts. Use clients endpoints "
   - name: "Locations"
     description:  "Locations are actual cities, districts where agents are prividing serivces."
-  - name: "Stistics"
+  - name: "Alerts"
+    description:  "Alerts are the system / user generated messages"
+  - name: "Statistics"
     description:  "Use these endpoints to get useful statistics based on location, client, user etc."
 
-    
 # Paths
 paths:
   /users/sign_in:
@@ -563,6 +565,89 @@ paths:
                   - id: 3
                     name: "Mumbai"
                     plus_code: 3V6J+3C
+  /alerts:
+    get:
+      summary: "Get alerts"
+      description:  |
+        This endpoint returns the list of all alerts.
+      tags:
+        - "Alerts"
+      responses:
+        "200":
+          description:  "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "ok"
+              message:
+                type: string
+                example: "2 alerts found"
+              data:
+                type: array
+                items:
+                  $ref: "#/definitions/Alert"
+                example:
+                  - id: 5
+                    message: "An appoiontment request has received"
+                    event_type: "appointment_request_create"
+                    created_at: "2022-07-01T13:01:49.492+05:30"
+                  - id: 7
+                    message: "An appoiontment request has received"
+                    event_type: "appointment_request_create"
+                    created_at: "2022-07-01T13:06:23.402+05:30"
+    post:
+      summary:  "Create new alert"
+      description:  |
+        This endpoint allows us to create a new alert.
+      tags:
+        - "Alerts"
+      parameters:
+        - in: "body"
+          name: "alert"
+          schema:
+            $ref: "#/definitions/CreateAlertRequestBody"
+      responses:
+        "200":
+          description:  "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "success"
+              message:
+                type: string
+                example: "Alert created successfully"
+  /alerts/{id}:
+    put:
+      summary: 'Update alert'
+      description:  |
+        This endpoint updates the alert and set it as read.
+      tags:
+        - "Alerts" 
+      parameters:
+        - name: "id"
+          in: "path"
+          type: "string"
+          required: true
+        - in: "body"
+          name: "alert"
+          schema:
+            $ref: "#/definitions/UpdateAlertRequestBody"
+      responses:
+        "200":
+          description:  "Status-Code: 200 OK"
+          schema:
+            type: object
+            properties: 
+              status:
+                type: string
+                example: "success"
+              message:
+                type: string
+                example: "Alert updated successfully"
   /statistics/user_dashboard:
     get:
       summary: Get stats required for user dashboard
@@ -766,6 +851,20 @@ definitions:
         type: "string"
       plus_code:
         type: string
+  Alert:
+    type: "object"
+    required:
+      - "id"
+      - "message"
+    properties:
+      id:
+        type: "integer"
+      message:
+        type: "string"
+      event_type:
+        type: "string"
+      created_at:
+        type: "string"
   # User payload samples
   SigninRequestBody:
     type: "object"
@@ -884,7 +983,19 @@ definitions:
             example: 04-06-2022 10AM      
           location_id:
             type: "string"
-            example: 4         
+            example: 4
+  CreateAlertRequestBody:
+    type: object
+    properties: 
+      message:
+        type: "string"
+        example: "Test alert"
+  UpdateAlertRequestBody:
+    type: object
+    properties: 
+      is_read:
+        type: "boolean"
+        example: true
   UpdateAppointmentRequestBody:   
     type: object   
     properties:

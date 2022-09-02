@@ -27,7 +27,7 @@ produces:
 tags:
   - name: "Users"
     description:  |
-      In FoxIVision, users can be CAT team members, Field Managers, Field co-ordinators, Field Executives, QMT or QC team members. The users endpoints can be used to login to the system, to check status of assigned Cases and to update details on work performed at customer's location etc.
+      In FoxIVision, users can be CAT team members, Calling team members, Field Managers, Field co-ordinators, Field Executives, Accounts team members, RMT or QC team members. The users endpoints can be used to login to the system, to check status of assigned Cases and to update details on work performed at customer's location etc.
   - name: "Cases"
     description: |
       Cases are nothing but tasks which the CAT team collected from Clients and uploaded in system, which requires on-field verification service.
